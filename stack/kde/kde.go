@@ -16,8 +16,8 @@ type KDEStack struct {
 }
 
 func (kde KDEStack) FetchPackages() ([]stack.Package, error) {
-	page, _ := kde.packagesPage()
-	fmt.Println(kde.ParsePage(page))
+	_, pageData, _ := kde.packagesPage()
+	fmt.Println(kde.ParsePage(pageData))
 	return nil, nil
 }
 
@@ -50,17 +50,15 @@ loop:
 	return pkgList, err
 }
 
-func (kde KDEStack) packagesPage() ([]byte, error) {
-	fullURL := fmt.Sprintf("%s/%s/%s/src", BaseURL, kde.Bundle, kde.Version)
-	if page, err := stack.PageBody(fullURL); err == nil {
-		return page, nil
+func (kde KDEStack) packagesPage() (string, []byte, error) {
+	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
+	for _, url := range urlPatterns {
+		fullURL := fmt.Sprintf(url, BaseURL, kde.Bundle, kde.Version)
+		if page, err := stack.PageBody(fullURL); err == nil {
+			return fullURL, page, nil
+		}
 	}
-	// Remove "src"
-	fullURL = fullURL[:len(fullURL)-3]
-	if page, err := stack.PageBody(fullURL); err == nil {
-		return page, nil
-	}
-	return nil, nil
+	return "", nil, fmt.Errorf("Cannot find %s, version %s", kde.Bundle, kde.Version)
 }
 
 func enclosedString(s, leftToken, rightToken string) string {
