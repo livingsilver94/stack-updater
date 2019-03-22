@@ -1,20 +1,22 @@
 package stack
 
 import (
-    "net/http"
-    "io/ioutil"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 )
 
 func PageBody(url string) ([]byte, error) {
-    reqResponse, err := http.Get(url)
-    if err != nil {
-        return nil, err
-    }
-    defer reqResponse.Body.Close()
+	reqResponse, err := http.Get(url)
+	httpCode := reqResponse.StatusCode
+	defer reqResponse.Body.Close()
 
-    return ioutil.ReadAll(reqResponse.Body)
-} 
+	if err != nil || httpCode < 200 || httpCode >= 300 {
+		return nil, fmt.Errorf("Cannot fetch page at address %s", url)
+	}
+	return ioutil.ReadAll(reqResponse.Body)
+}
 
 type Parser interface {
-    FetchPackages() (map[string]string, error)
+	FetchPackages() (map[string]string, error)
 }
