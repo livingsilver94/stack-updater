@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"regexp"
 )
 
 func PageBody(url string) ([]byte, error) {
@@ -15,6 +17,14 @@ func PageBody(url string) ([]byte, error) {
 		return nil, fmt.Errorf("Cannot fetch page at address %s", url)
 	}
 	return ioutil.ReadAll(reqResponse.Body)
+}
+
+func PackageFromFilename(filename, url string) Package {
+	extFinder := regexp.MustCompile("(\\.[a-zA-Z]+)+")
+	// Remove the extension (usually .tar.xz) from filename
+	cleanName := filename[:extFinder.FindStringIndex(filename)[0]]
+	lastDash := strings.LastIndex(cleanName, "-")
+	return Package{cleanName[:lastDash], cleanName[lastDash+1:], url}
 }
 
 type Parser interface {
