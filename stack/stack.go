@@ -8,9 +8,9 @@ import (
 
 func PageBody(url string) ([]byte, error) {
 	reqResponse, err := http.Get(url)
-	httpCode := reqResponse.StatusCode
 	defer reqResponse.Body.Close()
 
+	httpCode := reqResponse.StatusCode
 	if err != nil || httpCode < 200 || httpCode >= 300 {
 		return nil, fmt.Errorf("Cannot fetch page at address %s", url)
 	}
