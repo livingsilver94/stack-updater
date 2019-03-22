@@ -18,5 +18,11 @@ func PageBody(url string) ([]byte, error) {
 }
 
 type Parser interface {
-	FetchPackages() (map[string]string, error)
+	FetchPackages() ([]Package, error)
+}
+
+type Package struct {
+	Name    string
+	Version string
+	URL     string
 }

@@ -15,7 +15,7 @@ type KDEStack struct {
 	Version string
 }
 
-func (kde KDEStack) FetchPackages() (map[string]string, error) {
+func (kde KDEStack) FetchPackages() ([]stack.Package, error) {
 	page, _ := kde.packagesPage()
 	fmt.Println(kde.ParsePage(page))
 	return nil, nil
