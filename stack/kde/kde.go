@@ -36,7 +36,7 @@ loop:
 				tokenizer.Next()
 				tokenizer.Next()
 				token := tokenizer.Token()
-				pkgList = append(pkgList, strings.Trim(token.Data, " "))
+				pkgList = append(pkgList, strings.TrimSpace(token.Data))
 			}
 		case html.ErrorToken:
 			{
