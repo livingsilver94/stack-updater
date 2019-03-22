@@ -1,20 +1,18 @@
 package stack
 
 import (
-    "io"
     "net/http"
+    "io/ioutil"
 )
 
-func PageBody(url string) (io.Reader, error) {
+func PageBody(url string) ([]byte, error) {
     reqResponse, err := http.Get(url)
     if err != nil {
         return nil, err
     }
-    if err != nil {
-        return nil, err
-    }
     defer reqResponse.Body.Close()
-    return reqResponse.Body, nil
+
+    return ioutil.ReadAll(reqResponse.Body)
 } 
 
 type Parser interface {
