@@ -36,5 +36,5 @@ func main() {
 			return
 		}
 	}
-	parser.FetchPackages()
+	fmt.Println(parser.FetchPackages())
 }

@@ -8,7 +8,10 @@ import (
 	"strings"
 )
 
-const BaseURL = "https://cdn.download.kde.org/stable"
+const (
+	BaseURL = "https://cdn.download.kde.org/stable"
+	FileExtension = ".tar.xz"
+)
 
 type KDEStack struct {
 	Bundle  string
@@ -16,13 +19,23 @@ type KDEStack struct {
 }
 
 func (kde KDEStack) FetchPackages() ([]stack.Package, error) {
-	_, pageData, _ := kde.packagesPage()
-	fmt.Println(kde.ParsePage(pageData))
-	return nil, nil
+	if pageURL, pageData, err := kde.packagesPage(); err == nil {
+		if files, err := kde.ParsePage(pageData); err == nil {
+			var packages []stack.Package
+			for _, file := range files {
+				if strings.HasSuffix(file, FileExtension) {
+					pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
+					packages = append(packages, stack.PackageFromFilename(file, pkgURL))
+				}
+			}
+			return packages, nil
+		}
+	}
+	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
 func (KDEStack) ParsePage(page []byte) ([]string, error) {
-	var pkgList = make([]string, 0, 20)
+	var pkgList []string
 	var err error
 
 	pageString := enclosedString(string(page), "<ul>", "</ul>")
