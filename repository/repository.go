@@ -11,18 +11,18 @@ const (
 	Filepath = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
 )
 
-type Update struct {
+type update struct {
 	Version string `xml:"Version"`
 	Release string `xml:"release,attr"`
 }
 
-type Package struct {
+type repoPackage struct {
 	Name    string   `xml:"Name"`
-	Updates []Update `xml:"History>Update"`
+	Updates []update `xml:"History>Update"`
 }
 
 type Repository struct {
-	Packages []Package `xml:"Package"`
+	Packages []repoPackage `xml:"Package"`
 }
 
 func ReadRepository() *Repository {
@@ -37,8 +37,8 @@ func ReadRepository() *Repository {
 	return nil
 }
 
-func (repo *Repository) Package(pkgName string) Package {
-	var pkg Package
+func (repo *Repository) Package(pkgName string) repoPackage {
+	var pkg repoPackage
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
 	})
