@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/livingsilver94/stack_updater/repository"
 	"github.com/livingsilver94/stack_updater/stack"
 	"github.com/livingsilver94/stack_updater/stack/kde"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -36,5 +37,7 @@ func main() {
 			return
 		}
 	}
-	fmt.Println(parser.FetchPackages())
+	packages, _ := parser.FetchPackages()
+	repo := repository.ReadRepository()
+	fmt.Println(repo.Package(packages[3].Name))
 }
