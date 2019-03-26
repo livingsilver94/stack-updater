@@ -1,8 +1,7 @@
-package kde
+package stack
 
 import (
 	"fmt"
-	"github.com/livingsilver94/stack_updater/stack"
 	"golang.org/x/net/html"
 	"io"
 	"strings"
@@ -13,19 +12,19 @@ const (
 	FileExtension = ".tar.xz"
 )
 
-type KDEStack struct {
+type KDE struct {
 	Bundle  string
 	Version string
 }
 
-func (kde KDEStack) FetchPackages() ([]stack.Package, error) {
+func (kde KDE) FetchPackages() ([]Package, error) {
 	if pageURL, pageData, err := kde.packagesPage(); err == nil {
 		if files, err := kde.ParsePage(pageData); err == nil {
-			var packages []stack.Package
+			var packages []Package
 			for _, file := range files {
 				if strings.HasSuffix(file, FileExtension) {
 					pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
-					packages = append(packages, stack.PackageFromFilename(file, pkgURL))
+					packages = append(packages, PackageFromFilename(file, pkgURL))
 				}
 			}
 			return packages, nil
@@ -34,7 +33,7 @@ func (kde KDEStack) FetchPackages() ([]stack.Package, error) {
 	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
-func (KDEStack) ParsePage(page []byte) ([]string, error) {
+func (KDE) ParsePage(page []byte) ([]string, error) {
 	var pkgList []string
 	var err error
 
@@ -63,11 +62,11 @@ loop:
 	return pkgList, err
 }
 
-func (kde KDEStack) packagesPage() (string, []byte, error) {
+func (kde KDE) packagesPage() (string, []byte, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, BaseURL, kde.Bundle, kde.Version)
-		if page, err := stack.PageBody(fullURL); err == nil {
+		if page, err := PageBody(fullURL); err == nil {
 			return fullURL, page, nil
 		}
 	}

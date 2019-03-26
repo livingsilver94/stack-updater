@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/livingsilver94/stack_updater/repository"
 	"github.com/livingsilver94/stack_updater/stack"
-	"github.com/livingsilver94/stack_updater/stack/kde"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"strings"
 )
@@ -25,7 +24,7 @@ func main() {
 	switch strings.ToLower(*stackname) {
 	case "kde":
 		{
-			parser = kde.KDEStack{*bundle, *version}
+			parser = stack.KDE{*bundle, *version}
 		}
 	case "mate":
 		{
