@@ -9,3 +9,5 @@ golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5h
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6 h1:jMFz6MfLP0/4fUyZle81rXUoxOBFi19VUFKVDOQfozc=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLkstjWtayDeSgw=
+gopkg.in/libgit2/git2go.v26 v26.0.0-20190104134959-c9f7fd544d39 h1:t8ZonYWkloKoMg2pBBSH/LYqtlQ6bs7uySKYqXYEre8=
+gopkg.in/libgit2/git2go.v26 v26.0.0-20190104134959-c9f7fd544d39/go.mod h1:Fx2mSUbkLzBXfxYSP0L8/Iz7h0fIUJNDUYeRHFuzKH0=

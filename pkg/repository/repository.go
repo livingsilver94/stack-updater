@@ -5,24 +5,35 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"gopkg.in/libgit2/git2go.v26"
 )
 
 const (
 	Filepath = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
+	SourceBaseURL = "https://dev.getsol.us/source/"
 )
 
 type update struct {
-	Version string `xml:"Version"`
-	Release string `xml:"release,attr"`
+	version string `xml:"Version"`
+	release string `xml:"release,attr"`
 }
 
-type repoPackage struct {
+type Package struct {
 	Name    string   `xml:"Name"`
-	Updates []update `xml:"History>Update"`
+	updates []update `xml:"History>Update"`
+}
+
+func (pkg Package) DownloadSources() error {
+	_, err := git.Clone(SourceBaseURL + pkg.Name, ".", nil)
+	return err
+}
+
+func (pkg Package) CurrentVersion() string {
+	return pkg.updates[0].version
 }
 
 type Repository struct {
-	Packages []repoPackage `xml:"Package"`
+	Packages []Package `xml:"Package"`
 }
 
 func ReadRepository() *Repository {
@@ -37,8 +48,8 @@ func ReadRepository() *Repository {
 	return nil
 }
 
-func (repo *Repository) Package(pkgName string) repoPackage {
-	var pkg repoPackage
+func (repo *Repository) Package(pkgName string) Package {
+	var pkg Package
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
 	})
