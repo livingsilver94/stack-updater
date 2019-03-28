@@ -24,7 +24,7 @@ type Package struct {
 }
 
 func (pkg Package) DownloadSources() error {
-	_, err := git.Clone(SourceBaseURL + pkg.Name, ".", nil)
+	_, err := git.Clone(SourceBaseURL + pkg.Name, pkg.Name, &git.CloneOptions{})
 	return err
 }
 

@@ -38,5 +38,5 @@ func main() {
 	}
 	packages, _ := parser.FetchPackages()
 	repo := repository.ReadRepository()
-	repo.Package(packages[3].Name).DownloadSources()
+	fmt.Println(repo.Package(packages[3].Name).DownloadSources())
 }
