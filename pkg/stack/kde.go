@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	BaseURL = "https://cdn.download.kde.org/stable"
+	BaseURL       = "https://cdn.download.kde.org/stable"
 	FileExtension = ".tar.xz"
 )
 

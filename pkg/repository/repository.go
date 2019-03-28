@@ -2,14 +2,14 @@ package repository
 
 import (
 	"encoding/xml"
+	"gopkg.in/libgit2/git2go.v26"
 	"io/ioutil"
 	"os"
 	"sort"
-	"gopkg.in/libgit2/git2go.v26"
 )
 
 const (
-	Filepath = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
+	Filepath      = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
 	SourceBaseURL = "https://dev.getsol.us/source/"
 )
 
@@ -24,7 +24,7 @@ type Package struct {
 }
 
 func (pkg Package) DownloadSources() error {
-	_, err := git.Clone(SourceBaseURL + pkg.Name, pkg.Name, &git.CloneOptions{})
+	_, err := git.Clone(SourceBaseURL+pkg.Name, pkg.Name, &git.CloneOptions{})
 	return err
 }
 

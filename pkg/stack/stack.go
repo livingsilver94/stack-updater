@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 func PageBody(url string) ([]byte, error) {
