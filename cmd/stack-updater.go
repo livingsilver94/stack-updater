@@ -6,6 +6,8 @@ import (
 	"github.com/livingsilver94/stack_updater/pkg/stack"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"strings"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 var (
@@ -36,7 +38,20 @@ func main() {
 			return
 		}
 	}
-	packages, _ := parser.FetchPackages()
+	stackPackages, _ := parser.FetchPackages()
 	repo := repository.ReadRepository()
-	fmt.Println(repo.Package(packages[3].Name).DownloadSources())
+	for _, stackPkg := range stackPackages {
+		repoPkg := repo.Package(stackPkg.Name)
+		if stackPkg.Version >= "1.0.0" {
+			repoPkg.DownloadSources()
+			filename := repoPkg.Name+"/"+"package.yml"
+			ymlFile, _ := ioutil.ReadFile(filename)
+			var parsedFile map[string]interface{}
+			yaml.Unmarshal(ymlFile, &parsedFile)
+			parsedFile["version"] = stackPkg.Version
+			parsedFile["release"] = parsedFile["release"].(int)+1
+			ymlFile, _ = yaml.Marshal(parsedFile)
+			ioutil.WriteFile(filename, ymlFile, 0644)
+		}
+	}
 }

@@ -8,4 +8,5 @@ require (
 	golang.org/x/net v0.0.0-20190326090315-15845e8f865b
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 	gopkg.in/libgit2/git2go.v26 v26.0.0-20190104134959-c9f7fd544d39
+	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
