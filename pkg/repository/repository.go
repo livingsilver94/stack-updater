@@ -23,8 +23,8 @@ type Package struct {
 	updates []update `xml:"History>Update"`
 }
 
-func (pkg Package) DownloadSources() error {
-	_, err := git.Clone(SourceBaseURL+pkg.Name, pkg.Name, &git.CloneOptions{})
+func (pkg Package) DownloadSources(directory string) error {
+	_, err := git.Clone(SourceBaseURL+pkg.Name, directory+pkg.Name, &git.CloneOptions{})
 	return err
 }
 
