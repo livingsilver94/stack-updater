@@ -3,15 +3,72 @@ package repository
 import (
 	"encoding/xml"
 	"gopkg.in/libgit2/git2go.v26"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"sort"
+	"path/filepath"
 )
 
 const (
-	Filepath      = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
-	SourceBaseURL = "https://dev.getsol.us/source/"
+	Filepath          = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
+	SourceBaseURL     = "https://dev.getsol.us/source/"
+	PkgDefinitionFile = "package.yml"
 )
+
+type packageSource struct {
+	path string
+	definitions yaml.MapSlice
+}
+
+func newPackageSource(path string) (*packageSource, error) {
+	var definitions yaml.MapSlice
+	ymlFile, err := ioutil.ReadFile(filepath.Join(path, PkgDefinitionFile))
+	if err == nil {
+		yaml.Unmarshal(ymlFile, &definitions)
+		return &packageSource{path, definitions}, err
+	}
+	return nil, err
+}
+
+func (source *packageSource) ReadEntry(key string) interface{}{
+	for i := range source.definitions {
+		if source.definitions[i].Key == key {
+			return source.definitions[i].Value
+		}
+	}
+	return nil
+}
+
+func (source *packageSource) UpdateEntry(key string, value interface{}) error {
+	source.updateEntry(key, value)
+	return source.writeDefFile()
+}
+
+func (source *packageSource) UpdateEntries(defs map[string]interface{}) error {
+	for key, value := range defs {
+		source.updateEntry(key, value)
+	}
+	return source.writeDefFile()
+}
+
+func (source *packageSource) writeDefFile() error {
+	file, err := yaml.Marshal(source.definitions)
+	if err == nil {
+		err = ioutil.WriteFile(filepath.Join(source.path, PkgDefinitionFile), file, 0644)
+	}
+	return err
+}
+
+func (source *packageSource) updateEntry(key string, value interface{}) {
+	for i := range source.definitions {
+		if source.definitions[i].Key == key {
+			source.definitions[i].Value = value
+			break
+		}
+	}
+}
+
 
 type update struct {
 	version string `xml:"Version"`
@@ -19,16 +76,24 @@ type update struct {
 }
 
 type Package struct {
-	Name    string   `xml:"Name"`
+	Name    string `xml:"Name"`
+	Source  *packageSource
 	updates []update `xml:"History>Update"`
 }
 
-func (pkg Package) DownloadSources(directory string) error {
-	_, err := git.Clone(SourceBaseURL+pkg.Name, directory+pkg.Name, &git.CloneOptions{})
+func (pkg *Package) DownloadSources(directory string) error {
+	sourcePath := filepath.Join(directory, pkg.Name)
+	_, err := git.Clone(SourceBaseURL+pkg.Name, sourcePath, &git.CloneOptions{})
+	if err == nil {
+		sources, err := newPackageSource(sourcePath)
+		if err == nil {
+			pkg.Source = sources
+		}
+	}
 	return err
 }
 
-func (pkg Package) CurrentVersion() string {
+func (pkg *Package) CurrentVersion() string {
 	return pkg.updates[0].version
 }
 
