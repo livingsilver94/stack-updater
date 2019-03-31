@@ -62,7 +62,7 @@ func (repo *Repository) Package(pkgName string) (Package, error) {
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
 	})
-	if pkgIndex >= 0 {
+	if pkgIndex < len(repo.Packages) && repo.Packages[pkgIndex].Name == pkgName {
 		return repo.Packages[pkgIndex], nil
 	}
 	return Package{}, fmt.Errorf("No package named %s in this repository", pkgName)

@@ -40,7 +40,10 @@ func main() {
 	repo := repository.ReadRepository()
 	for _, stackPkg := range stackPackages {
 		if repoPkg, err := repo.Package(stackPkg.Name); err == nil {
-			fmt.Println(repoPkg)
+			if stackPkg.Version >= "1.0.0" {
+				repoPkg.DownloadSources("./pacchetti")
+				repoPkg.Source.UpdateEntry("version", "TEST")
+			}
 		}
 	}
 }
