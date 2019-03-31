@@ -3,11 +3,12 @@ package repository
 import (
 	"encoding/xml"
 	"gopkg.in/libgit2/git2go.v26"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"sort"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 const (
@@ -16,58 +17,67 @@ const (
 	PkgDefinitionFile = "package.yml"
 )
 
+// This is a ugly yet necessary hack since we don't have a package.yml linter *yet*
+// A package.yml file in fact is not a fully YAML-compliant file and we cannot parse it as a YAML
+var yamlEditor = regexp.MustCompile(`^(?P<key>[[:alnum:]]+)(?P<separator> *: *)(?P<value>[[:print:]]+)$`)
+
 type packageSource struct {
 	path string
-	definitions yaml.MapSlice
+	definition string
 }
 
 func newPackageSource(path string) (*packageSource, error) {
-	var definitions yaml.MapSlice
-	ymlFile, err := ioutil.ReadFile(filepath.Join(path, PkgDefinitionFile))
+	defFile, err := ioutil.ReadFile(filepath.Join(path, PkgDefinitionFile))
 	if err == nil {
-		yaml.Unmarshal(ymlFile, &definitions)
-		return &packageSource{path, definitions}, err
+		return &packageSource{path, string(defFile)}, err
 	}
 	return nil, err
 }
 
-func (source *packageSource) ReadEntry(key string) interface{}{
-	for i := range source.definitions {
-		if source.definitions[i].Key == key {
-			return source.definitions[i].Value
+func (source *packageSource) Entry(key string) string {
+	for _, line := range source.readDefLines() {
+		if matches := yamlEditor.FindStringSubmatch(line); matches != nil && matches[1] == key {
+			return matches[3]
 		}
 	}
-	return nil
+	return ""
 }
 
-func (source *packageSource) UpdateEntry(key string, value interface{}) error {
-	source.updateEntry(key, value)
+func (source *packageSource) UpdateEntry(key, value string) error {
+	var builder strings.Builder
+	for _, line := range source.readDefLines() {
+		if matches := yamlEditor.FindStringSubmatch(line); matches != nil && matches[1] == key {
+			line = yamlEditor.ReplaceAllString(line, "${key}${separator}" + value)
+		}
+		builder.WriteString(line+"\n")
+	}
+	source.definition = builder.String()
 	return source.writeDefFile()
 }
 
-func (source *packageSource) UpdateEntries(defs map[string]interface{}) error {
-	for key, value := range defs {
-		source.updateEntry(key, value)
+func (source *packageSource) UpdateEntries(defs map[string]string) error {
+	var builder strings.Builder
+	for _, line := range source.readDefLines() {
+		for key, value := range defs {
+			if matches := yamlEditor.FindStringSubmatch(line); matches != nil && matches[1] == key {
+				line = yamlEditor.ReplaceAllString(line, "${key}${separator}" + value)
+				break
+			}
+		}
+		builder.WriteString(line+"\n")
 	}
+	source.definition = builder.String()
 	return source.writeDefFile()
 }
 
 func (source *packageSource) writeDefFile() error {
-	file, err := yaml.Marshal(source.definitions)
-	if err == nil {
-		err = ioutil.WriteFile(filepath.Join(source.path, PkgDefinitionFile), file, 0644)
-	}
-	return err
+	return ioutil.WriteFile(filepath.Join(source.path, PkgDefinitionFile), []byte(source.definition), 0644)
 }
 
-func (source *packageSource) updateEntry(key string, value interface{}) {
-	for i := range source.definitions {
-		if source.definitions[i].Key == key {
-			source.definitions[i].Value = value
-			break
-		}
-	}
+func (source *packageSource) readDefLines() []string {
+	return strings.Split(source.definition, "\n")
 }
+
 
 
 type update struct {

@@ -41,7 +41,7 @@ func main() {
 	for _, stackPkg := range stackPackages {
 		repoPkg := repo.Package(stackPkg.Name)
 		if stackPkg.Version >= "1.0.0" {
-			repoPkg.DownloadSources("")
+			repoPkg.DownloadSources("./pacchetti")
  			repoPkg.Source.UpdateEntry("version", "TEST")
 		}
 	}
