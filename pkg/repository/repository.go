@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"gopkg.in/libgit2/git2go.v26"
 	"io/ioutil"
+	"fmt"
 )
 
 const (
@@ -57,13 +58,12 @@ func ReadRepository() *Repository {
 	return nil
 }
 
-func (repo *Repository) Package(pkgName string) Package {
-	var pkg Package
+func (repo *Repository) Package(pkgName string) (Package, error) {
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
 	})
 	if pkgIndex >= 0 {
-		pkg = repo.Packages[pkgIndex]
+		return repo.Packages[pkgIndex], nil
 	}
-	return pkg
+	return Package{}, fmt.Errorf("No package named %s in this repository", pkgName)
 }
