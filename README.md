@@ -1,5 +1,6 @@
 # stack-updater
-[![Go Report Card](https://goreportcard.com/badge/github.com/livingsilver94/stack-updater)](https://goreportcard.com/report/github.com/livingsilver94/stack-updater)\
+[![Go Report Card](https://goreportcard.com/badge/github.com/livingsilver94/stack-updater)](https://goreportcard.com/report/github.com/livingsilver94/stack-updater)&nbsp;
+
 `stack-updater` is a simple utility to ease Solus development. It's been written to automate big software stack updates (meaning pieces of software that come split in many packages), so that maintainers won't need to fetch tarballs manually and bump the release number in every package definition file anymore.
 
 ## How it works
