@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/livingsilver94/stack_updater/pkg/repository"
-	"github.com/livingsilver94/stack_updater/pkg/stack"
+	"github.com/livingsilver94/stack-updater/pkg/repository"
+	"github.com/livingsilver94/stack-updater/pkg/stack"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"strings"
 )
