@@ -19,12 +19,16 @@ func PageBody(url string) ([]byte, error) {
 	return ioutil.ReadAll(reqResponse.Body)
 }
 
-func PackageFromFilename(filename, url string) Package {
+func PackageFromFilename(filename, url string) (Package, error) {
 	extFinder := regexp.MustCompile("(\\.[a-zA-Z]+)+")
 	// Remove the extension (usually .tar.xz) from filename
-	cleanName := filename[:extFinder.FindStringIndex(filename)[0]]
-	lastDash := strings.LastIndex(cleanName, "-")
-	return Package{cleanName[:lastDash], cleanName[lastDash+1:], url}
+	if indexes := extFinder.FindStringIndex(filename); indexes != nil {
+		cleanName := filename[:indexes[0]]
+		lastDash := strings.LastIndex(cleanName, "-")
+		return Package{cleanName[:lastDash], cleanName[lastDash+1:], url}, nil
+	}
+
+	return Package{}, fmt.Errorf("Filename is not valid: %s", filename)
 }
 
 type Parser interface {

@@ -24,7 +24,9 @@ func (kde KDE) FetchPackages() ([]Package, error) {
 			for _, file := range files {
 				if strings.HasSuffix(file, FileExtension) {
 					pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
-					packages = append(packages, PackageFromFilename(file, pkgURL))
+					if pkg, err := PackageFromFilename(file, pkgURL); err == nil{
+						packages = append(packages, pkg)
+					}
 				}
 			}
 			return packages, nil
