@@ -1,8 +1,7 @@
 package stack_test
 
 import (
-	"github.com/livingsilver94/stack-updater/pkg/stack"
-	"net/http/httptest"
+	"github.com/livingsilver94/stack-updater/stack"
 	"testing"
 )
 
