@@ -8,7 +8,7 @@ endif
 
 build:
 	@mkdir -p bin
-	@GOBIN=$(CURDIR)/bin go install cmd/*
+	@GOBIN=$(CURDIR)/bin go install ./cmd
 
 install:
-	@install -D $(CURDIR)/bin/$(NAME) -t $(PREFIX)/bin
+	@install -D bin/* -t $(PREFIX)/bin
