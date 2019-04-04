@@ -68,7 +68,7 @@ func (kde KDE) packagesPage() (string, []byte, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, BaseURL, kde.Bundle, kde.Version)
-		if page, err := PageBody(fullURL); err == nil {
+		if page, err := pageBody(fullURL); err == nil {
 			return fullURL, page, nil
 		}
 	}

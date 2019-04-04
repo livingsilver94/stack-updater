@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func PageBody(url string) ([]byte, error) {
+func pageBody(url string) ([]byte, error) {
 	reqResponse, err := http.Get(url)
 	defer reqResponse.Body.Close()
 
