@@ -8,23 +8,35 @@ import (
 )
 
 const (
-	BaseURL       = "https://cdn.download.kde.org/stable"
 	FileExtension = ".tar.xz"
 )
 
-type KDE struct {
+type kdeHandler struct {
+	BaseURL string
 	Bundle  string
 	Version string
 }
 
-func (kde KDE) FetchPackages() ([]Package, error) {
+func NewKDEHandler(bundle, version string) kdeHandler {
+	return kdeHandler{BaseURL: "https://cdn.download.kde.org/stable",
+		Bundle:  bundle,
+		Version: version}
+}
+
+func NewKDEHandlerWithURL(bundle, version, url string) kdeHandler {
+	return kdeHandler{BaseURL: url,
+		Bundle:  bundle,
+		Version: version}
+}
+
+func (kde kdeHandler) FetchPackages() ([]Package, error) {
 	if pageURL, pageData, err := kde.packagesPage(); err == nil {
 		if files, err := kde.ParsePage(pageData); err == nil {
 			var packages []Package
 			for _, file := range files {
 				if strings.HasSuffix(file, FileExtension) {
 					pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
-					if pkg, err := PackageFromFilename(file, pkgURL); err == nil{
+					if pkg, err := PackageFromFilename(file, pkgURL); err == nil {
 						packages = append(packages, pkg)
 					}
 				}
@@ -35,7 +47,7 @@ func (kde KDE) FetchPackages() ([]Package, error) {
 	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
-func (KDE) ParsePage(page []byte) ([]string, error) {
+func (kdeHandler) ParsePage(page []byte) ([]string, error) {
 	var pkgList []string
 	var err error
 
@@ -64,10 +76,10 @@ loop:
 	return pkgList, err
 }
 
-func (kde KDE) packagesPage() (string, []byte, error) {
+func (kde kdeHandler) packagesPage() (string, []byte, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
-		fullURL := fmt.Sprintf(url, BaseURL, kde.Bundle, kde.Version)
+		fullURL := fmt.Sprintf(url, kde.BaseURL, kde.Bundle, kde.Version)
 		if page, err := pageBody(fullURL); err == nil {
 			return fullURL, page, nil
 		}
