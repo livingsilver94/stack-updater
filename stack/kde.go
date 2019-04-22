@@ -26,7 +26,7 @@ func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	fileExtension :=".tar.xz"
 
 	if pageURL, pageData, err := kde.packagesPage(); err == nil {
-		if files, err := kde.ParsePage(pageData); err == nil {
+		if files, err := kde.parsePage(pageData); err == nil {
 			var packages []Package
 			for _, file := range files {
 				if strings.HasSuffix(file, fileExtension) {
@@ -42,8 +42,7 @@ func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
-// ParsePage extracts a list of filenames from a given KDE HTML page.
-func (KDEHandler) ParsePage(page []byte) ([]string, error) {
+func (KDEHandler) parsePage(page []byte) ([]string, error) {
 	var pkgList []string
 	var err error
 
