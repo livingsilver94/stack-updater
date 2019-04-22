@@ -7,22 +7,25 @@ import (
 	"strings"
 )
 
-const (
-	FileExtension = ".tar.xz"
-)
-
 type kdeHandler struct {
 	BaseURL string
 	Bundle  string
 	Version string
 }
 
+// NewKDEHandler returns a struct to handle the KDE stack, with a default
+// working URL.
+//
+// The KDE stack is split among bundles (applications, frameworks...)
+// and every bundle has its own version, so these parameters are required.
 func NewKDEHandler(bundle, version string) kdeHandler {
-	return kdeHandler{BaseURL: "https://cdn.download.kde.org/stable",
-		Bundle:  bundle,
-		Version: version}
+	return NewKDEHandlerWithURL(bundle, version, "https://cdn.download.kde.org/stable")
 }
 
+// NewKDEHandlerWithURL returns a struct to handle the KDE stack, using the provided URL.
+//
+// The KDE stack is split among bundles (applications, frameworks...)
+// and every bundle has its own version, so these parameters are required.
 func NewKDEHandlerWithURL(bundle, version, url string) kdeHandler {
 	return kdeHandler{BaseURL: url,
 		Bundle:  bundle,
@@ -30,11 +33,13 @@ func NewKDEHandlerWithURL(bundle, version, url string) kdeHandler {
 }
 
 func (kde kdeHandler) FetchPackages() ([]Package, error) {
+	fileExtension :=".tar.xz"
+
 	if pageURL, pageData, err := kde.packagesPage(); err == nil {
 		if files, err := kde.ParsePage(pageData); err == nil {
 			var packages []Package
 			for _, file := range files {
-				if strings.HasSuffix(file, FileExtension) {
+				if strings.HasSuffix(file, fileExtension) {
 					pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
 					if pkg, err := PackageFromFilename(file, pkgURL); err == nil {
 						packages = append(packages, pkg)
@@ -47,6 +52,7 @@ func (kde kdeHandler) FetchPackages() ([]Package, error) {
 	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
+// ParsePage extracts a list of filenames from a given KDE HTML page.
 func (kdeHandler) ParsePage(page []byte) ([]string, error) {
 	var pkgList []string
 	var err error

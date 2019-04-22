@@ -19,6 +19,12 @@ func pageBody(url string) ([]byte, error) {
 	return ioutil.ReadAll(reqResponse.Body)
 }
 
+// PackageFromFilename parses a package's filename and returns a stack.Package
+// instance if all was successfull. It expects a filename structured in
+// this way: `pkgname-version.some.extension`.
+//
+// PackageFromFilename also takes a `url` argument since there's no way to get it
+// from a filename.
 func PackageFromFilename(filename, url string) (Package, error) {
 	extFinder := regexp.MustCompile("(\\.[a-zA-Z]+)+")
 	// Remove the extension (usually .tar.xz) from filename
@@ -32,10 +38,14 @@ func PackageFromFilename(filename, url string) (Package, error) {
 	return Package{}, fmt.Errorf("Filename is not valid: %s", filename)
 }
 
+// Parser is an interface representing the ability to build a list of Package
+// from the information that a struct has.
 type Parser interface {
+	// FetchPackages returns a list of Package structs.
 	FetchPackages() ([]Package, error)
 }
 
+// Package represents a piece of software from a certain stack.
 type Package struct {
 	Name    string
 	Version string
