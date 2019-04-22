@@ -1,0 +1,18 @@
+<PISI>
+    <Package>
+        <Name>pkg1</Name>
+        <History>
+            <Update release="1">
+                <Version>0.0.1</Version>
+            </Update>
+        </History>
+    </Package>
+    <Package>
+        <Name>pkg2</Name>
+        <History>
+            <Update release="2">
+                <Version>0.0.2</Version>
+            </Update>
+        </History>
+    </Package>
+</PISI>

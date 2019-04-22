@@ -11,19 +11,18 @@ import (
 )
 
 const (
-	Filepath          = "/var/lib/eopkg/index/Solus/eopkg-index.xml"
 	SourceBaseURL     = "https://dev.getsol.us/source/"
 )
 
-type update struct {
-	version string `xml:"Version"`
-	release string `xml:"release,attr"`
+type Update struct {
+	Version string `xml:"Version"`
+	Release string `xml:"release,attr"`
 }
 
 type Package struct {
 	Name    string `xml:"Name"`
 	Source  *packageSource
-	updates []update `xml:"History>Update"`
+	Updates []Update `xml:"History>Update"`
 }
 
 func (pkg *Package) DownloadSources(directory string) error {
@@ -39,7 +38,7 @@ func (pkg *Package) DownloadSources(directory string) error {
 }
 
 func (pkg *Package) CurrentVersion() string {
-	return pkg.updates[0].version
+	return pkg.Updates[0].Version
 }
 
 type Repository struct {
@@ -47,8 +46,13 @@ type Repository struct {
 }
 
 func ReadRepository() *Repository {
-	if xmlFile, err := os.Open(Filepath); err == nil {
+	return ReadRepositoryAt("/var/lib/eopkg/index/Solus/eopkg-index.xml")
+}
+
+func ReadRepositoryAt(path string) *Repository {
+	if xmlFile, err := os.Open(path); err == nil {
 		defer xmlFile.Close()
+
 		if fileBytes, err := ioutil.ReadAll(xmlFile); err == nil {
 			var repo Repository
 			xml.Unmarshal(fileBytes, &repo)
@@ -62,6 +66,7 @@ func (repo *Repository) Package(pkgName string) (Package, error) {
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
 	})
+
 	if pkgIndex < len(repo.Packages) && repo.Packages[pkgIndex].Name == pkgName {
 		return repo.Packages[pkgIndex], nil
 	}
