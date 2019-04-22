@@ -25,7 +25,7 @@ func NewKDEHandler(bundle, version string) KDEHandler {
 func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	fileExtension :=".tar.xz"
 
-	if pageURL, pageData, err := kde.packagesPage(); err == nil {
+	if pageURL, pageData, err := kde.findCorrectPage(); err == nil {
 		if files, err := kde.parsePage(pageData); err == nil {
 			var packages []Package
 			for _, file := range files {
@@ -71,7 +71,7 @@ loop:
 	return pkgList, err
 }
 
-func (kde KDEHandler) packagesPage() (string, []byte, error) {
+func (kde KDEHandler) findCorrectPage() (string, []byte, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, kde.BaseURL, kde.Bundle, kde.Version)
