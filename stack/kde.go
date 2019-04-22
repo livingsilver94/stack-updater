@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type kdeHandler struct {
+type KDEHandler struct {
 	BaseURL string
 	Bundle  string
 	Version string
@@ -18,21 +18,11 @@ type kdeHandler struct {
 //
 // The KDE stack is split among bundles (applications, frameworks...)
 // and every bundle has its own version, so these parameters are required.
-func NewKDEHandler(bundle, version string) kdeHandler {
-	return NewKDEHandlerWithURL(bundle, version, "https://cdn.download.kde.org/stable")
+func NewKDEHandler(bundle, version string) KDEHandler {
+	return KDEHandler{bundle, version, "https://cdn.download.kde.org/stable"}
 }
 
-// NewKDEHandlerWithURL returns a struct to handle the KDE stack, using the provided URL.
-//
-// The KDE stack is split among bundles (applications, frameworks...)
-// and every bundle has its own version, so these parameters are required.
-func NewKDEHandlerWithURL(bundle, version, url string) kdeHandler {
-	return kdeHandler{BaseURL: url,
-		Bundle:  bundle,
-		Version: version}
-}
-
-func (kde kdeHandler) FetchPackages() ([]Package, error) {
+func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	fileExtension :=".tar.xz"
 
 	if pageURL, pageData, err := kde.packagesPage(); err == nil {
@@ -53,7 +43,7 @@ func (kde kdeHandler) FetchPackages() ([]Package, error) {
 }
 
 // ParsePage extracts a list of filenames from a given KDE HTML page.
-func (kdeHandler) ParsePage(page []byte) ([]string, error) {
+func (KDEHandler) ParsePage(page []byte) ([]string, error) {
 	var pkgList []string
 	var err error
 
@@ -82,7 +72,7 @@ loop:
 	return pkgList, err
 }
 
-func (kde kdeHandler) packagesPage() (string, []byte, error) {
+func (kde KDEHandler) packagesPage() (string, []byte, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, kde.BaseURL, kde.Bundle, kde.Version)

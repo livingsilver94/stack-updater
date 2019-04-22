@@ -43,7 +43,7 @@ func TestKDEFetchPackages(t *testing.T) {
 	}))
 	defer server.Close()
 
-	kde := stack.NewKDEHandlerWithURL("test", "0.0", server.URL)
+	kde := stack.KDEHandler{Bundle: "test", Version: "0.0", BaseURL: server.URL}
 	pkgs, err := kde.FetchPackages()
 	if err != nil {
 		t.Errorf("Could not fetch packages: %v", err)
