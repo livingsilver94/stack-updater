@@ -12,3 +12,6 @@ build:
 
 install:
 	@install -D bin/* -t $(PREFIX)/bin
+
+test:
+	go test ./...
