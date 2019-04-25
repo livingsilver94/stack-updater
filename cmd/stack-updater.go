@@ -24,7 +24,7 @@ func main() {
 	switch strings.ToLower(*stackname) {
 	case "kde":
 		{
-			parser = stack.KDE{*bundle, *version}
+			parser = stack.NewKDE(*bundle, *version)
 		}
 	case "mate":
 		{

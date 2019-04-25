@@ -3,27 +3,28 @@ package stack
 import (
 	"fmt"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"io"
 	"strings"
 )
 
-type KDEHandler struct {
+type KDE struct {
 	BaseURL string
 	Bundle  string
 	Version string
 }
 
-// NewKDEHandler returns a struct to handle the KDE stack, with a default
+// NewKDE returns a struct to handle the KDE stack, with a default
 // working URL.
 //
 // The KDE stack is split among bundles (applications, frameworks...)
 // and every bundle has its own version, so these parameters are required.
-func NewKDEHandler(bundle, version string) KDEHandler {
-	return KDEHandler{bundle, version, "https://cdn.download.kde.org/stable"}
+func NewKDE(bundle, version string) KDE {
+	return KDE{Bundle: bundle, Version: version, BaseURL: "https://cdn.download.kde.org/stable"}
 }
 
-func (kde KDEHandler) FetchPackages() ([]Package, error) {
-	fileExtension :=".tar.xz"
+func (kde KDE) FetchPackages() ([]Package, error) {
+	fileExtension := ".tar.xz"
 
 	if pageURL, pageData, err := kde.findCorrectPage(); err == nil {
 		if files, err := kde.parsePage(pageData); err == nil {
@@ -42,36 +43,37 @@ func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
-func (KDEHandler) parsePage(page []byte) ([]string, error) {
+func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
 	var pkgList []string
-	var err error
 
-	pageString := enclosedString(string(page), "<ul>", "</ul>")
-	tokenizer := html.NewTokenizer(strings.NewReader(pageString))
-loop:
-	for {
-		// We are parsing lines like <li><a href="filename"> filename</a></li>
-		switch tokenizer.Next() {
-		case html.StartTagToken:
-			{
-				tokenizer.Next()
-				tokenizer.Next()
-				token := tokenizer.Token()
-				pkgList = append(pkgList, strings.TrimSpace(token.Data))
-			}
-		case html.ErrorToken:
-			{
-				if parseErr := tokenizer.Err(); parseErr != io.EOF {
-					err = fmt.Errorf("Cannot parse the page: %v", parseErr)
+	doc := html.NewTokenizer(page)
+	for tokenType := doc.Next(); tokenType != html.ErrorToken; tokenType = doc.Next() {
+		token := doc.Token()
+		if tokenType == html.StartTagToken && token.DataAtom == atom.Ul {
+			// We found the list
+			for {
+				switch doc.Next() {
+				case html.StartTagToken:
+					{
+						doc.Next()
+						doc.Next()
+						pkgList = append(pkgList, strings.TrimSpace(doc.Token().Data))
+					}
+				case html.EndTagToken:
+					{
+						if doc.Token().DataAtom == atom.Ul {
+							return pkgList, nil
+						}
+					}
 				}
-				break loop
 			}
 		}
 	}
-	return pkgList, err
+	// We couldn't find the list
+	return pkgList, fmt.Errorf("Couldn't find a list in this page")
 }
 
-func (kde KDEHandler) findCorrectPage() (string, []byte, error) {
+func (kde KDE) findCorrectPage() (string, io.ReadCloser, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, kde.BaseURL, kde.Bundle, kde.Version)
@@ -80,13 +82,4 @@ func (kde KDEHandler) findCorrectPage() (string, []byte, error) {
 		}
 	}
 	return "", nil, fmt.Errorf("Cannot find %s, version %s", kde.Bundle, kde.Version)
-}
-
-func enclosedString(s, leftToken, rightToken string) string {
-	leftIndex := strings.Index(s, leftToken)
-	rightIndex := strings.LastIndex(s, rightToken)
-	if leftIndex < 0 || rightIndex < 0 {
-		return ""
-	}
-	return s[leftIndex+len(leftToken) : rightIndex]
 }

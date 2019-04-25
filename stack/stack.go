@@ -2,21 +2,20 @@ package stack
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
-func pageBody(url string) ([]byte, error) {
+func pageBody(url string) (io.ReadCloser, error) {
 	reqResponse, err := http.Get(url)
-	defer reqResponse.Body.Close()
 
 	httpCode := reqResponse.StatusCode
 	if err != nil || httpCode < 200 || httpCode >= 300 {
 		return nil, fmt.Errorf("Cannot fetch page at address %s", url)
 	}
-	return ioutil.ReadAll(reqResponse.Body)
+	return reqResponse.Body, nil
 }
 
 // PackageFromFilename parses a package's filename and returns a stack.Package
