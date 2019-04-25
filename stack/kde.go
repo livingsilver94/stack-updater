@@ -2,10 +2,11 @@ package stack
 
 import (
 	"fmt"
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
 	"io"
 	"strings"
+
+	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 type KDE struct {
@@ -45,6 +46,7 @@ func (kde KDE) FetchPackages() ([]Package, error) {
 
 func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
 	var pkgList []string
+	var err error
 
 	doc := html.NewTokenizer(page)
 	for tokenType := doc.Next(); tokenType != html.ErrorToken; tokenType = doc.Next() {
@@ -62,7 +64,7 @@ func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
 				case html.EndTagToken:
 					{
 						if doc.Token().DataAtom == atom.Ul {
-							return pkgList, nil
+							goto Return
 						}
 					}
 				}
@@ -70,7 +72,10 @@ func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
 		}
 	}
 	// We couldn't find the list
-	return pkgList, fmt.Errorf("Couldn't find a list in this page")
+	err = fmt.Errorf("Couldn't find a list in this page")
+Return:
+	page.Close()
+	return pkgList, err
 }
 
 func (kde KDE) findCorrectPage() (string, io.ReadCloser, error) {
