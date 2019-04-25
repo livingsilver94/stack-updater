@@ -29,9 +29,10 @@ func PackageFromFilename(filename, url string) (Package, error) {
 	// Remove the extension (usually .tar.xz) from filename
 	if indexes := extFinder.FindStringIndex(filename); indexes != nil {
 		cleanName := filename[:indexes[0]]
+		// Make sure filename has at least a dash (to separate name from version)
 		if lastDash := strings.LastIndex(cleanName, "-"); lastDash >= 0 {
-			// Make sure filename has at least a dash (to separate name from version)
-			return Package{cleanName[:lastDash], cleanName[lastDash+1:], url}, nil
+			name, version := cleanName[:lastDash], cleanName[lastDash+1:]
+			return Package{Name: name, Version: version, URL: url}, nil
 		}
 	}
 	return Package{}, fmt.Errorf("Filename is not valid: %s", filename)
