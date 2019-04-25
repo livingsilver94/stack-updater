@@ -2,10 +2,11 @@ package stack_test
 
 import (
 	"fmt"
-	"github.com/livingsilver94/stack-updater/stack"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/livingsilver94/stack-updater/stack"
 )
 
 func TestPackageFromFilename(t *testing.T) {
@@ -43,7 +44,7 @@ func TestKDEFetchPackages(t *testing.T) {
 	}))
 	defer server.Close()
 
-	kde := stack.KDEHandler{Bundle: "test", Version: "0.0", BaseURL: server.URL}
+	kde := stack.KDE{Bundle: "test", Version: "0.0", BaseURL: server.URL}
 	pkgs, err := kde.FetchPackages()
 	if err != nil {
 		t.Errorf("Could not fetch packages: %v", err)
