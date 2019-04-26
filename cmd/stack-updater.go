@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/livingsilver94/stack-updater/repository"
 	"github.com/livingsilver94/stack-updater/stack"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"strings"
 )
 
 var (
@@ -42,7 +43,10 @@ func main() {
 		if repoPkg, err := repo.Package(stackPkg.Name); err == nil {
 			if stackPkg.Version >= "1.0.0" {
 				repoPkg.DownloadSources("./pacchetti")
-				repoPkg.Source.UpdateEntry("version", "TEST")
+				repoPkg.Source.UpdateVersion("TEST")
+				repoPkg.Source.UpdateRelease("LOL")
+				repoPkg.Source.UpdateSource("https://example.com", "ABCdef")
+				repoPkg.Source.Write()
 			}
 		}
 	}
