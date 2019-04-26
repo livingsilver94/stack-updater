@@ -9,6 +9,10 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+// KDE has the ability return a list of packages by parsing an HTML
+// page from the KDE project. Since KDE is split among various bundles,
+// this struct keeps only track of one of them. If you need to handle multiple
+// bundles, you'll need to instantiate multiple KDE objects.
 type KDE struct {
 	BaseURL string
 	Bundle  string
@@ -16,14 +20,13 @@ type KDE struct {
 }
 
 // NewKDE returns a struct to handle the KDE stack, with a default
-// working URL.
-//
-// The KDE stack is split among bundles (applications, frameworks...)
-// and every bundle has its own version, so these parameters are required.
+// base URL.
 func NewKDE(bundle, version string) KDE {
 	return KDE{Bundle: bundle, Version: version, BaseURL: "https://cdn.download.kde.org/stable"}
 }
 
+// FetchPackages returns a list of Package objects belonging to the bundle
+// and version specified in the KDE handler.
 func (kde KDE) FetchPackages() ([]Package, error) {
 	fileExtension := ".tar.xz"
 
@@ -64,7 +67,7 @@ func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
 				case html.EndTagToken:
 					{
 						if doc.Token().DataAtom == atom.Ul {
-							goto Return
+							goto RETURN
 						}
 					}
 				}
@@ -73,7 +76,7 @@ func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
 	}
 	// We couldn't find the list
 	err = fmt.Errorf("Couldn't find a list in this page")
-Return:
+RETURN:
 	page.Close()
 	return pkgList, err
 }

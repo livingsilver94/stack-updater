@@ -19,7 +19,7 @@ func pageBody(url string) (io.ReadCloser, error) {
 }
 
 // PackageFromFilename parses a package's filename and returns a stack.Package
-// instance if all was successfull. It expects a filename structured in
+// instance if all was successful. It expects a filename structured in
 // this way: `pkgname-version.some.extension`.
 //
 // PackageFromFilename also takes a `url` argument since there's no way to get it
@@ -41,7 +41,6 @@ func PackageFromFilename(filename, url string) (Package, error) {
 // Parser is an interface representing the ability to build a list of Package
 // from the information that a struct has.
 type Parser interface {
-	// FetchPackages returns a list of Package structs.
 	FetchPackages() ([]Package, error)
 }
 
