@@ -2,7 +2,6 @@ package repository
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -79,14 +78,14 @@ func ReadRepositoryAt(path string) *Repository {
 }
 
 // Package returns a package from the repository with the specified name.
-// If package is not found, an error is returned along with an empty Package object
-func (repo *Repository) Package(pkgName string) (Package, error) {
+// If no package is found, an nil value is returned
+func (repo *Repository) Package(pkgName string) *Package {
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
 	})
 
-	if pkgIndex < len(repo.Packages) && repo.Packages[pkgIndex].Name == pkgName {
-		return repo.Packages[pkgIndex], nil
+	if !(pkgIndex < len(repo.Packages) && repo.Packages[pkgIndex].Name == pkgName) {
+		return nil
 	}
-	return Package{}, fmt.Errorf("No package named %s in this repository", pkgName)
+	return &repo.Packages[pkgIndex]
 }

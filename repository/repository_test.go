@@ -1,9 +1,10 @@
 package repository_test
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/livingsilver94/stack-updater/repository"
-	"testing"
 )
 
 func createRepo() *repository.Repository {
@@ -24,11 +25,11 @@ func TestReadRepository(t *testing.T) {
 
 func TestFindPackageInRepo(t *testing.T) {
 	repo := createRepo()
-	if pkg1, err := repo.Package("pkg1"); pkg1.Name != "pkg1" || err != nil {
-		t.Errorf("Expected pkg1 with a nil error;\t Got package name \"%v\" with error \"%v\"", pkg1.Name, err)
+	if pkg1 := repo.Package("pkg1"); pkg1.Name != "pkg1" {
+		t.Errorf("Expected pkg1 but got %v", pkg1.Name)
 	}
 
-	if _, err := repo.Package("nonexistent"); err == nil {
-		t.Errorf("Expected an error but got no one")
+	if repo.Package("nonexistent") != nil {
+		t.Errorf("Expected a nil value but got something different")
 	}
 }
