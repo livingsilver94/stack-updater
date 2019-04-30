@@ -9,25 +9,25 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
-// KDE has the ability return a list of packages by parsing an HTML
+// KDEHandler returns a list of packages by parsing an HTML
 // page from the KDE project. Since KDE is split among various bundles,
 // this struct keeps only track of one of them. If you need to handle multiple
 // bundles, you'll need to instantiate multiple KDE objects.
-type KDE struct {
+type KDEHandler struct {
 	BaseURL string
 	Bundle  string
 	Version string
 }
 
-// NewKDE returns a struct to handle the KDE stack, with a default
+// NewKDEHandler returns a struct to handle the KDE stack, with a default
 // base URL.
-func NewKDE(bundle, version string) KDE {
-	return KDE{Bundle: bundle, Version: version, BaseURL: "https://cdn.download.kde.org/stable"}
+func NewKDEHandler(bundle, version string) KDEHandler {
+	return KDEHandler{Bundle: bundle, Version: version, BaseURL: "https://cdn.download.kde.org/stable"}
 }
 
 // FetchPackages returns a list of Package objects belonging to the bundle
 // and version specified in the KDE handler.
-func (kde KDE) FetchPackages() ([]Package, error) {
+func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	fileExtension := ".tar.xz"
 
 	if pageURL, pageData, err := kde.findCorrectPage(); err == nil {
@@ -47,7 +47,7 @@ func (kde KDE) FetchPackages() ([]Package, error) {
 	return nil, fmt.Errorf("Cannot fetch packages")
 }
 
-func (KDE) parsePage(page io.ReadCloser) ([]string, error) {
+func (KDEHandler) parsePage(page io.ReadCloser) ([]string, error) {
 	var pkgList []string
 	var err error
 
@@ -81,7 +81,7 @@ RETURN:
 	return pkgList, err
 }
 
-func (kde KDE) findCorrectPage() (string, io.ReadCloser, error) {
+func (kde KDEHandler) findCorrectPage() (string, io.ReadCloser, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, kde.BaseURL, kde.Bundle, kde.Version)

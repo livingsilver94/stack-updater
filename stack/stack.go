@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+// SupportedStack represents a stack supported by this package.
+type SupportedStack int
+
+const (
+	KDE SupportedStack = iota
+)
+
 func pageBody(url string) (io.ReadCloser, error) {
 	reqResponse, err := http.Get(url)
 
@@ -38,9 +45,31 @@ func PackageFromFilename(filename, url string) (Package, error) {
 	return Package{}, fmt.Errorf("Filename is not valid: %s", filename)
 }
 
-// Parser is an interface representing the ability to build a list of Package
+// CreateStackHandler constructs and returns a stack handler if supported. It returns nil otherwise.
+func CreateStackHandler(config HandlerConfig) Handler {
+	switch config.Stack {
+	case KDE:
+		{
+			return NewKDEHandler(config.Bundle, config.Version)
+		}
+	default:
+		{
+			return nil
+		}
+	}
+}
+
+// HandlerConfig represents parameters used to create a stack handler using a factory
+type HandlerConfig struct {
+	Stack   SupportedStack
+	Version string
+	// Bundle can be empty if the selected stack is not split in bundles
+	Bundle string
+}
+
+// Handler is an interface representing the ability to build a list of Package
 // from the information that a struct has.
-type Parser interface {
+type Handler interface {
 	FetchPackages() ([]Package, error)
 }
 
