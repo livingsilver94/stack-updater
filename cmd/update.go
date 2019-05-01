@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/livingsilver94/stack-updater/stack"
 	"github.com/spf13/cobra"
 )
-
-// SupportedStacks is a list of stacks this application can handle
-var SupportedStacks = [...]string{"kde"}
 
 var updateCmd = &cobra.Command{
 	Use:   "update <reponame>[:bundle] <version>",
@@ -25,28 +23,19 @@ func init() {
 
 func checkUpdateArgs(cmd *cobra.Command, args []string) error {
 	if len(args) < 2 {
-		return fmt.Errorf("Usage: %s", cmd.Use)
+		return fmt.Errorf("Not enough arguments provided")
 	}
-	stack := strings.Split(strings.ToLower(args[0]), ":")
-	if !isValidStack(stack[0]) {
-		return fmt.Errorf("%s is not a supported stack. Choose any from %s", stack[0], SupportedStacks)
+	stackArgs := strings.Split(strings.ToLower(args[0]), ":")
+	if _, err := stack.SupportedStackString(stackArgs[0]); err != nil {
+		return fmt.Errorf("%s is not a supported stack. Choose any from %s", stackArgs[0], stack.SupportedStackStrings())
 	}
-	if len(stack) > 1 {
+	if len(stackArgs) > 1 {
 		// We also have a bundle to sanitize
-		if stack[1] == "" {
+		if stackArgs[1] == "" {
 			return fmt.Errorf("You should not use \":\" if you don't mean to specify a bundle")
 		}
 	}
 	return nil
-}
-
-func isValidStack(stack string) bool {
-	for _, validBundle := range SupportedStacks {
-		if stack == validBundle {
-			return true
-		}
-	}
-	return false
 }
 
 func updateStack(cmd *cobra.Command, args []string) {
