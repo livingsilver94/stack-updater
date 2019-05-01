@@ -47,6 +47,8 @@ func PackageFromFilename(filename, url string) (Package, error) {
 }
 
 // CreateStackHandler constructs and returns a stack handler if supported. It returns nil otherwise.
+//
+//Note: bundle is ignored if selected stack is known for not to be split in bundles.
 func CreateStackHandler(stack SupportedStack, version, bundle string) Handler {
 	switch stack {
 	case KDE:
