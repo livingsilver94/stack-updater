@@ -47,25 +47,17 @@ func PackageFromFilename(filename, url string) (Package, error) {
 }
 
 // CreateStackHandler constructs and returns a stack handler if supported. It returns nil otherwise.
-func CreateStackHandler(config HandlerConfig) Handler {
-	switch config.Stack {
+func CreateStackHandler(stack SupportedStack, version, bundle string) Handler {
+	switch stack {
 	case KDE:
 		{
-			return NewKDEHandler(config.Bundle, config.Version)
+			return NewKDEHandler(bundle, version)
 		}
 	default:
 		{
 			return nil
 		}
 	}
-}
-
-// HandlerConfig represents parameters used to create a stack handler using a factory
-type HandlerConfig struct {
-	Stack   SupportedStack
-	Version string
-	// Bundle can be empty if the selected stack is not split in bundles
-	Bundle string
 }
 
 // Handler is an interface representing the ability to build a list of Package
