@@ -11,6 +11,7 @@ import (
 // SupportedStack represents a stack supported by this package.
 type SupportedStack int
 
+//go:generate go run github.com/dmarkham/enumer -type=SupportedStack
 const (
 	KDE SupportedStack = iota
 )
