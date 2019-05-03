@@ -84,5 +84,5 @@ func packageHash(pkg stack.Package) string {
 
 	hasher := sha256.New()
 	io.Copy(hasher, file)
-	return string(hasher.Sum(nil))
+	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
