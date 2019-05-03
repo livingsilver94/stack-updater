@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -34,8 +35,9 @@ func (source *packageSource) Version() string {
 }
 
 // Release returns release field's value from the package definition
-func (source *packageSource) Release() string {
-	return source.singleLineEntry("release")
+func (source *packageSource) Release() int {
+	intRelease, _ := strconv.Atoi(source.singleLineEntry("release"))
+	return intRelease
 }
 
 // UpdateVersion replaces the version field's value in the package definition
@@ -44,8 +46,9 @@ func (source *packageSource) UpdateVersion(value string) {
 }
 
 // UpdateRelease replaces the release field's value in the package definition
-func (source *packageSource) UpdateRelease(value string) {
-	source.updateEntry("release", value)
+func (source *packageSource) UpdateRelease(value int) {
+	strRelease := strconv.Itoa(value)
+	source.updateEntry("release", strRelease)
 }
 
 // UpdateSource replaces the source field's value in the package definition
