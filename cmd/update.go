@@ -1,9 +1,15 @@
 package cmd
 
 import (
+	"crypto/sha256"
 	"fmt"
+	"io"
 	"strings"
 
+	"github.com/DataDrake/waterlog"
+	"github.com/DataDrake/waterlog/format"
+	"github.com/DataDrake/waterlog/level"
+	"github.com/livingsilver94/stack-updater/repository"
 	"github.com/livingsilver94/stack-updater/stack"
 	"github.com/spf13/cobra"
 )
@@ -18,6 +24,9 @@ Note: the ":bundle" part of a repository name is needed when a stack is split in
 }
 
 func init() {
+	waterlog.SetLevel(level.Info)
+	waterlog.SetFormat(format.Min)
+
 	RootCmd.AddCommand(updateCmd)
 }
 
@@ -39,5 +48,40 @@ func checkUpdateArgs(cmd *cobra.Command, args []string) error {
 }
 
 func updateStack(cmd *cobra.Command, args []string) {
+	stackParams := strings.Split(strings.ToLower(args[0]), ":")
+	if len(stackParams) == 1 {
+		stackParams[1] = ""
+	}
+	chosenStack, _ := stack.SupportedStackString(stackParams[0])
+	stackHandler := stack.CreateStackHandler(chosenStack, args[1], stackParams[1])
+	stackPackages, _ := stackHandler.FetchPackages()
+	repo := repository.ReadRepository()
 
+	for _, stackPkg := range stackPackages {
+		repoPkg := repo.Package(stackPkg.Name)
+		if repoPkg == nil {
+			waterlog.Infof("%s not found in Solus repository\n", stackPkg.Name)
+			continue
+		}
+		if stackPkg.Version > repoPkg.CurrentVersion() {
+			waterlog.Printf("Updating %s from %s to %s\n", repoPkg.Name, repoPkg.CurrentVersion(), stackPkg.Version)
+			repoPkg.DownloadSources(".")
+			repoPkg.Source.UpdateRelease(repoPkg.Source.Release() + 1)
+			repoPkg.Source.UpdateVersion(stackPkg.Version)
+			repoPkg.Source.UpdateSource(stackPkg.URL, packageHash(stackPkg))
+			repoPkg.Source.Write()
+		}
+	}
+}
+
+func packageHash(pkg stack.Package) string {
+	file, err := pkg.Download()
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	hasher := sha256.New()
+	io.Copy(hasher, file)
+	return string(hasher.Sum(nil))
 }
