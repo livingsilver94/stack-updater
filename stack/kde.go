@@ -85,7 +85,7 @@ func (kde KDEHandler) findCorrectPage() (string, io.ReadCloser, error) {
 	urlPatterns := []string{"%s/%s/%s/src", "%s/%s/%s"}
 	for _, url := range urlPatterns {
 		fullURL := fmt.Sprintf(url, kde.BaseURL, kde.Bundle, kde.Version)
-		if page, err := pageBody(fullURL); err == nil {
+		if page, err := download(fullURL); err == nil {
 			return fullURL, page, nil
 		}
 	}

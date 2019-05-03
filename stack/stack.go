@@ -16,7 +16,7 @@ const (
 	KDE SupportedStack = iota
 )
 
-func pageBody(url string) (io.ReadCloser, error) {
+func download(url string) (io.ReadCloser, error) {
 	reqResponse, err := http.Get(url)
 
 	httpCode := reqResponse.StatusCode
@@ -73,4 +73,9 @@ type Package struct {
 	Name    string
 	Version string
 	URL     string
+}
+
+// Download downloads the package's tarball
+func (pkg Package) Download() (io.ReadCloser, error) {
+	return download(pkg.URL)
 }
