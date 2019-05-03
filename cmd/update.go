@@ -27,6 +27,7 @@ func init() {
 	waterlog.SetLevel(level.Info)
 	waterlog.SetFormat(format.Min)
 
+	updateCmd.Flags().StringP("directory", "t", "", "where to store package sources")
 	RootCmd.AddCommand(updateCmd)
 }
 
@@ -65,7 +66,7 @@ func updateStack(cmd *cobra.Command, args []string) {
 		}
 		if stackPkg.Version > repoPkg.CurrentVersion() {
 			waterlog.Printf("Updating %s from %s to %s\n", repoPkg.Name, repoPkg.CurrentVersion(), stackPkg.Version)
-			repoPkg.DownloadSources(".")
+			repoPkg.DownloadSources(cmd.Flag("directory").Value.String())
 			repoPkg.Source.UpdateRelease(repoPkg.Source.Release() + 1)
 			repoPkg.Source.UpdateVersion(stackPkg.Version)
 			repoPkg.Source.UpdateSource(stackPkg.URL, packageHash(stackPkg))
