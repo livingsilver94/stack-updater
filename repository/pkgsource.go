@@ -59,12 +59,16 @@ func (source *packageSource) UpdateSource(url, sha256 string) {
 	for i := 0; i < len(lines); i++ {
 		if strings.HasPrefix(lines[i], "source") {
 			builder.WriteString(lines[i] + "\n")
-			newLine = fmt.Sprintf("    - %s : %s", url, sha256)
+			newLine = fmt.Sprintf("    - %s : %s\n", url, sha256)
 			i++
 		} else {
-			newLine = lines[i]
+			if lines[i] == "" {
+				newLine = lines[i]
+			} else {
+				newLine = lines[i] + "\n"
+			}
 		}
-		builder.WriteString(newLine + "\n")
+		builder.WriteString(newLine)
 	}
 	source.definition = builder.String()
 }
@@ -91,7 +95,10 @@ func (source *packageSource) updateEntry(key, value string) {
 		if strings.HasPrefix(ymlLine, key) {
 			ymlLine = lineMatcher.ReplaceAllString(ymlLine, "${key}${separator}"+value)
 		}
-		builder.WriteString(ymlLine + "\n")
+		if ymlLine != "" {
+			ymlLine += "\n"
+		}
+		builder.WriteString(ymlLine)
 	}
 	source.definition = builder.String()
 }
