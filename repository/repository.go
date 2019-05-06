@@ -10,54 +10,13 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"sort"
 	"time"
-
-	git "gopkg.in/libgit2/git2go.v26"
 )
 
 const (
-	// SourceBaseURL is a base URL from which to download package sources
-	SourceBaseURL = "https://dev.getsol.us/source/"
-	UnstableURL   = "https://packages.getsol.us/unstable/eopkg-index.xml.xz"
+	UnstableURL = "https://packages.getsol.us/unstable/eopkg-index.xml.xz"
 )
-
-// Update represent a commit of a Solus package. Every new release is
-// distinguished by Release
-type Update struct {
-	Version string `xml:"Version"`
-	Release string `xml:"release,attr"`
-}
-
-// Package represents a software package inside the Solus repository
-type Package struct {
-	Name    string `xml:"Name"`
-	Source  *packageSource
-	Updates []Update `xml:"History>Update"`
-}
-
-// DownloadSources downloads this package's source files to directory.
-// Internally, it works by cloning a git repository so that it's possible to manually
-// browse into directory and perform usual git operations.
-//
-// DownloadSources also populate Package.Source field
-func (pkg *Package) DownloadSources(directory string) error {
-	sourcePath := filepath.Join(directory, pkg.Name)
-	_, err := git.Clone(SourceBaseURL+pkg.Name, sourcePath, &git.CloneOptions{})
-	if err == nil {
-		sources, err := newPackageSource(sourcePath)
-		if err == nil {
-			pkg.Source = sources
-		}
-	}
-	return err
-}
-
-// CurrentVersion returns package's latest version available in the repository
-func (pkg *Package) CurrentVersion() string {
-	return pkg.Updates[0].Version
-}
 
 // Repository represents the Solus repository containing a list of packages
 type Repository struct {
@@ -97,6 +56,19 @@ func ReadAt(path string) (*Repository, error) {
 	}
 	defer xmlFile.Close()
 	return parseXML(xmlFile)
+}
+
+// Package returns a package from the repository with the specified name.
+// If no package is found, an nil value is returned
+func (repo *Repository) Package(pkgName string) *Package {
+	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
+		return repo.Packages[i].Name >= pkgName
+	})
+
+	if !(pkgIndex < len(repo.Packages) && repo.Packages[pkgIndex].Name == pkgName) {
+		return nil
+	}
+	return &repo.Packages[pkgIndex]
 }
 
 func parseXML(xmlDoc io.Reader) (*Repository, error) {
@@ -140,17 +112,4 @@ func extractArchive(archive io.Reader, dest io.Writer) error {
 	cmd.Stdout = dest
 	err := cmd.Run()
 	return err
-}
-
-// Package returns a package from the repository with the specified name.
-// If no package is found, an nil value is returned
-func (repo *Repository) Package(pkgName string) *Package {
-	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
-		return repo.Packages[i].Name >= pkgName
-	})
-
-	if !(pkgIndex < len(repo.Packages) && repo.Packages[pkgIndex].Name == pkgName) {
-		return nil
-	}
-	return &repo.Packages[pkgIndex]
 }
