@@ -56,7 +56,7 @@ func updateStack(cmd *cobra.Command, args []string) {
 	chosenStack, _ := stack.SupportedStackString(stackParams[0])
 	stackHandler := stack.CreateStackHandler(chosenStack, args[1], stackParams[1])
 	stackPackages, _ := stackHandler.FetchPackages()
-	repo := repository.ReadRepository()
+	repo, _ := repository.GetUnstable("/tmp/ciao.xml")
 
 	for _, stackPkg := range stackPackages {
 		repoPkg := repo.Package(stackPkg.Name)

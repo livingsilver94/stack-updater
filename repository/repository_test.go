@@ -8,7 +8,7 @@ import (
 )
 
 func createRepo() *repository.Repository {
-	return repository.ReadRepositoryAt("../test_data/repository.xml")
+	return repository.ReadAt("../test_data/repository.xml")
 }
 
 func TestReadRepository(t *testing.T) {
