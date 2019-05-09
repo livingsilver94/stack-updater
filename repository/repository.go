@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -50,13 +49,11 @@ func GetUnstable(path string) (*Repository, error) {
 func HasBeenUpdated(lastTime time.Time) bool {
 	req, _ := http.NewRequest(http.MethodHead, UnstableURL, nil)
 	req.Header.Add("If-Unmodified-Since", lastTime.Format(time.RFC1123))
-	fmt.Println(lastTime.Format(time.RFC1123))
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return true
 	}
 	defer resp.Body.Close()
-	fmt.Println(resp.StatusCode)
 	return resp.StatusCode == 412
 }
 
@@ -85,12 +82,12 @@ func (repo *Repository) Package(pkgName string) *Package {
 }
 
 func parseXML(xmlDoc io.Reader) (*Repository, error) {
-	fileBytes, err := ioutil.ReadAll(xmlDoc)
+	xmlDecoder := xml.NewDecoder(xmlDoc)
+	var repo Repository
+	err := xmlDecoder.Decode(&repo)
 	if err != nil {
 		return nil, err
 	}
-	var repo Repository
-	xml.Unmarshal(fileBytes, &repo)
 	return &repo, nil
 }
 
