@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/DataDrake/waterlog"
@@ -56,8 +58,11 @@ func updateStack(cmd *cobra.Command, args []string) {
 	chosenStack, _ := stack.SupportedStackString(stackParams[0])
 	stackHandler := stack.CreateStackHandler(chosenStack, args[1], stackParams[1])
 	stackPackages, _ := stackHandler.FetchPackages()
-	repo, _ := repository.GetUnstable("/tmp/ciao.xml")
-
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		cacheDir = "."
+	}
+	repo, _ := repository.GetUnstable(filepath.Join(cacheDir, "stack-updater", "unstable.xml"))
 	for _, stackPkg := range stackPackages {
 		repoPkg := repo.Package(stackPkg.Name)
 		if repoPkg == nil {
