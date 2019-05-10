@@ -11,12 +11,12 @@ import (
 
 const (
 	// PkgDefinitionFile is the name of a package definition file, without
-	// its base directory
+	// its base directory.
 	PkgDefinitionFile = "package.yml"
 )
 
 // This is an ugly yet necessary hack since we don't have a package.yml linter *yet*
-// A package.yml file in fact is not a fully YAML-compliant file and we cannot parse it as a YAML
+// A package.yml file in fact is not a fully YAML-compliant file and we cannot parse it as a YAML.
 var lineMatcher = regexp.MustCompile(`^(?P<key>[[:alnum:]]+)(?P<separator> *: *)(?P<value>[[:print:]]+)$`)
 
 type packageSource struct {
@@ -29,29 +29,29 @@ func newPackageSource(path string) (*packageSource, error) {
 	return &packageSource{path, string(defFile)}, err
 }
 
-// Version returns version field's value from the package definition
+// Version returns version field's value from the package definition.
 func (source *packageSource) Version() string {
 	return source.singleLineEntry("version")
 }
 
-// Release returns release field's value from the package definition
+// Release returns release field's value from the package definition.
 func (source *packageSource) Release() int {
 	intRelease, _ := strconv.Atoi(source.singleLineEntry("release"))
 	return intRelease
 }
 
-// UpdateVersion replaces the version field's value in the package definition
+// UpdateVersion replaces the version field's value in the package definition.
 func (source *packageSource) UpdateVersion(value string) {
 	source.updateEntry("version", value)
 }
 
-// UpdateRelease replaces the release field's value in the package definition
+// UpdateRelease replaces the release field's value in the package definition.
 func (source *packageSource) UpdateRelease(value int) {
 	strRelease := strconv.Itoa(value)
 	source.updateEntry("release", strRelease)
 }
 
-// UpdateSource replaces the source field's value in the package definition
+// UpdateSource replaces the source field's value in the package definition.
 func (source *packageSource) UpdateSource(url, sha256 string) {
 	var builder strings.Builder
 	var newLine string
@@ -73,7 +73,7 @@ func (source *packageSource) UpdateSource(url, sha256 string) {
 	source.definition = builder.String()
 }
 
-// Write writes the package definition to disk
+// Write writes the package definition to disk.
 func (source *packageSource) Write() error {
 	return ioutil.WriteFile(filepath.Join(source.path, PkgDefinitionFile), []byte(source.definition), 0644)
 }
