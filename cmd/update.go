@@ -79,8 +79,8 @@ func updateStack(cmd *cobra.Command, args []string) {
 		}
 		if stackPkg.Version > repoPkg.CurrentVersion() {
 			log.Printf("Updating %s from %s to %s\n", repoPkg.Name, repoPkg.CurrentVersion(), stackPkg.Version)
-			if repoPkg.DownloadSources(cmd.Flag("directory").Value.String()) != nil {
-				log.Errorf("Couldn't fetch sources for %s. Skipping...\n", repoPkg.Name)
+			if err := repoPkg.DownloadSources(cmd.Flag("directory").Value.String()); err != nil {
+				log.Errorf("%s: %s. Skipping...\n", repoPkg.Name, err)
 				continue
 			}
 			repoPkg.Source.UpdateRelease(repoPkg.Source.Release() + 1)

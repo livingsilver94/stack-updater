@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"os"
 	"path/filepath"
 
 	git "gopkg.in/libgit2/git2go.v26"
@@ -26,20 +27,24 @@ type Package struct {
 }
 
 // DownloadSources downloads this package's source files to directory.
-// Internally, it works by cloning a git repository so that it's possible to manually
-// browse into directory and perform usual git operations.
+// It clones a git repository so that it's possible to manually
+// browse into the directory and perform usual git operations.
 //
 // DownloadSources also populate Package.Source field
 func (pkg *Package) DownloadSources(directory string) error {
 	sourcePath := filepath.Join(directory, pkg.Name)
-	_, err := git.Clone(SourceBaseURL+pkg.Name, sourcePath, &git.CloneOptions{})
-	if err == nil {
-		sources, err := newPackageSource(sourcePath)
-		if err == nil {
-			pkg.Source = sources
+	if _, err := os.Stat(filepath.Join(sourcePath, PkgDefinitionFile)); os.IsNotExist(err) {
+		_, err = git.Clone(SourceBaseURL+pkg.Name, sourcePath, &git.CloneOptions{})
+		if err != nil {
+			return err
 		}
 	}
-	return err
+	sources, err := newPackageSource(sourcePath)
+	if err != nil {
+		return err
+	}
+	pkg.Source = sources
+	return nil
 }
 
 // CurrentVersion returns package's latest version available in the repository
