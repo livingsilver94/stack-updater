@@ -21,4 +21,4 @@ stack-updater update kde:frameworks 5.56 -t /destination/directory
  - `xz` command
 
 ## License
-TBD.
+GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later).
