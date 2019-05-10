@@ -14,7 +14,7 @@ const (
 
 // Update represent a commit of a Solus package.
 type Update struct {
-	// Upstream version
+	// Upstream version.
 	Version string `xml:"Version"`
 	// Solus package release, incremental.
 	Release int `xml:"release,attr"`
