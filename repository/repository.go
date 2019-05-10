@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	// UnstableURL is where the Solus unstable repository is download from.
 	UnstableURL = "https://packages.getsol.us/unstable/eopkg-index.xml.xz"
 )
 
@@ -22,11 +23,13 @@ var httpClient = &http.Client{
 	Timeout: time.Second * 20,
 }
 
-// Repository represents the Solus repository containing a list of packages
+// Repository represents the Solus repository containing a list of packages.
 type Repository struct {
 	Packages []Package `xml:"Package"`
 }
 
+// GetUnstable fetches the unstable Solus repository and saves it to path.
+// path is a file that will be created if it doesn't exist.
 func GetUnstable(path string) (*Repository, error) {
 	modTime := time.Time{}
 	if fileInfo, err := os.Stat(path); err == nil {
@@ -37,9 +40,15 @@ func GetUnstable(path string) (*Repository, error) {
 		if err != nil {
 			return nil, err
 		}
-		os.MkdirAll(filepath.Dir(path), os.ModeDir)
-		file, err := os.Create(path)
-		extractArchive(bytes.NewReader(archive), file)
+
+		file, err := createFile(path)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := extractArchive(bytes.NewReader(archive), file); err != nil {
+			return nil, err
+		}
 	}
 	return ReadAt(path)
 }
@@ -69,7 +78,7 @@ func ReadAt(path string) (*Repository, error) {
 }
 
 // Package returns a package from the repository with the specified name.
-// If no package is found, an nil value is returned
+// If no package is found, an nil value is returned.
 func (repo *Repository) Package(pkgName string) *Package {
 	pkgIndex := sort.Search(len(repo.Packages), func(i int) bool {
 		return repo.Packages[i].Name >= pkgName
@@ -126,4 +135,15 @@ func extractArchive(archive io.Reader, dest io.Writer) error {
 	cmd.Stdout = dest
 	err := cmd.Run()
 	return err
+}
+
+func createFile(path string) (*os.File, error) {
+	if err := os.MkdirAll(filepath.Dir(path), os.ModeDir); err != nil {
+		return nil, err
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
