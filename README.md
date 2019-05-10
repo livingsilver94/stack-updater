@@ -16,7 +16,12 @@ stack-updater update mate 1.23
 stack-updater update kde:frameworks 5.56 -t /destination/directory
 ```
 
-## Dependencies
+## Installation
+1) `make` to build the binary
+2) `make install PREFIX=/my/prefix` to install it
+
+Optionally, you can run `make test` to ensure that tests pass before installing.
+### Dependencies
  - libgit (dynamically linked)
  - `xz` command
 
