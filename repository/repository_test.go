@@ -14,8 +14,8 @@ func createRepo() *repository.Repository {
 
 func TestReadRepository(t *testing.T) {
 	expectedPkgs := []repository.Package{
-		{Name: "pkg1", Source: nil, Updates: []repository.Update{{Version: "0.0.1", Release: "1"}}},
-		{Name: "pkg2", Source: nil, Updates: []repository.Update{{Version: "0.0.2", Release: "2"}}},
+		{Name: "pkg1", Source: nil, Updates: []repository.Update{{Version: "0.0.1", Release: 1}}},
+		{Name: "pkg2", Source: nil, Updates: []repository.Update{{Version: "0.0.2", Release: 2}}},
 	}
 
 	repo := createRepo()
