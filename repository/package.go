@@ -17,7 +17,7 @@ type Update struct {
 	// Upstream version
 	Version string `xml:"Version"`
 	// Solus package release, incremental.
-	Release string `xml:"release,attr"`
+	Release int `xml:"release,attr"`
 }
 
 // Package represents a software package inside the Solus repository.
