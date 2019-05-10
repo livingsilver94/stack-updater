@@ -15,7 +15,7 @@ build:
 	@go build -o $(CURDIR)/bin/$(NAME) ./main.go 
 
 install:
-	@install -D bin/* -t $(PREFIX)/bin
+	@install -Dm00755 bin/$(NAME) -t $(DESTDIR)/$(PREFIX)/bin
 
 test:
 	@go test ./...
