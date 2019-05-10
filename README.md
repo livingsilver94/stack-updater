@@ -22,7 +22,7 @@ stack-updater update kde:frameworks 5.56 -t /destination/directory
 
 Optionally, you can run `make test` to ensure that tests pass before installing.
 ### Dependencies
- - libgit (dynamically linked)
+ - libgit2 (dynamically linked)
  - `xz` command
 
 ## License
