@@ -12,7 +12,9 @@ import (
 type SupportedStack int
 
 //go:generate go run github.com/dmarkham/enumer -transform=lower -type=SupportedStack
+
 const (
+	// KDE enum
 	KDE SupportedStack = iota
 )
 
