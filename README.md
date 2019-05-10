@@ -10,15 +10,15 @@ After the list extraction, we check the Solus Unstable repository by downloading
 
 ## Examples
 The `--help` flag should provide all the necessary information. Anyway, here are some examples on how to run the command (note the `:` to separate stack name from a bundle):
-```bash
+```shell
 stack-updater update kde:applications 19.04.0
 stack-updater update mate 1.23
-stack-updater update kde:frameworks 5.56 -t /destinarion/directory
+stack-updater update kde:frameworks 5.56 -t /destination/directory
 ```
 
 ## Dependencies
- - libgit (dynamically linked). This is because a package mantainer hardly won't have git installed; that helps reducing command's binary size.
- - `xz` command.
+ - libgit (dynamically linked)
+ - `xz` command
 
 ## License
 TBD.
