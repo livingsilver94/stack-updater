@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/DataDrake/waterlog"
+	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
 	"github.com/DataDrake/waterlog/level"
 	"github.com/livingsilver94/stack-updater/repository"
@@ -26,8 +26,8 @@ Note: the ":bundle" part of a repository name is needed when a stack is split in
 }
 
 func init() {
-	waterlog.SetLevel(level.Info)
-	waterlog.SetFormat(format.Min)
+	log.SetLevel(level.Info)
+	log.SetFormat(format.Min)
 
 	updateCmd.Flags().StringP("directory", "t", "", "where to store package sources")
 	RootCmd.AddCommand(updateCmd)
@@ -44,7 +44,7 @@ func checkUpdateArgs(cmd *cobra.Command, args []string) error {
 	if len(stackArgs) > 1 {
 		// We also have a bundle to sanitize
 		if stackArgs[1] == "" {
-			return fmt.Errorf("You should not use \":\" if you don't mean to specify a bundle")
+			return fmt.Errorf(`You should not use ":" if you don't mean to specify a bundle`)
 		}
 	}
 	return nil
@@ -57,37 +57,50 @@ func updateStack(cmd *cobra.Command, args []string) {
 	}
 	chosenStack, _ := stack.SupportedStackString(stackParams[0])
 	stackHandler := stack.CreateStackHandler(chosenStack, args[1], stackParams[1])
-	stackPackages, _ := stackHandler.FetchPackages()
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		cacheDir = "."
 	}
-	repo, _ := repository.GetUnstable(filepath.Join(cacheDir, "stack-updater", "unstable.xml"))
+
+	stackPackages, err := stackHandler.FetchPackages()
+	if err != nil {
+		log.Fatal(err)
+	}
+	repo, err := repository.GetUnstable(filepath.Join(cacheDir, "stack-updater", "unstable.xml"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, stackPkg := range stackPackages {
 		repoPkg := repo.Package(stackPkg.Name)
 		if repoPkg == nil {
-			waterlog.Infof("%s not found in Solus repository\n", stackPkg.Name)
+			log.Infof("%s not found in Solus repository\n", stackPkg.Name)
 			continue
 		}
 		if stackPkg.Version > repoPkg.CurrentVersion() {
-			waterlog.Printf("Updating %s from %s to %s\n", repoPkg.Name, repoPkg.CurrentVersion(), stackPkg.Version)
-			repoPkg.DownloadSources(cmd.Flag("directory").Value.String())
+			log.Printf("Updating %s from %s to %s\n", repoPkg.Name, repoPkg.CurrentVersion(), stackPkg.Version)
+			if repoPkg.DownloadSources(cmd.Flag("directory").Value.String()) != nil {
+				log.Errorf("Couldn't fetch sources for %s. Skipping...\n", repoPkg.Name)
+				continue
+			}
 			repoPkg.Source.UpdateRelease(repoPkg.Source.Release() + 1)
 			repoPkg.Source.UpdateVersion(stackPkg.Version)
 			repoPkg.Source.UpdateSource(stackPkg.URL, packageHash(stackPkg))
-			repoPkg.Source.Write()
+			if repoPkg.Source.Write() != nil {
+				log.Errorf("Couldn't write updated sources for %s\n", repoPkg.Name)
+			}
 		}
 	}
 }
 
 func packageHash(pkg stack.Package) string {
-	file, err := pkg.Download()
+	tarball, err := pkg.Download()
 	if err != nil {
 		return ""
 	}
-	defer file.Close()
+	defer tarball.Close()
 
 	hasher := sha256.New()
-	io.Copy(hasher, file)
+	io.Copy(hasher, tarball)
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
