@@ -53,7 +53,7 @@ func checkUpdateArgs(cmd *cobra.Command, args []string) error {
 func updateStack(cmd *cobra.Command, args []string) {
 	stackParams := strings.Split(strings.ToLower(args[0]), ":")
 	if len(stackParams) == 1 {
-		stackParams[1] = ""
+		stackParams = append(stackParams, "")
 	}
 	chosenStack, _ := stack.SupportedStackString(stackParams[0])
 	stackHandler := stack.CreateStackHandler(chosenStack, args[1], stackParams[1])
