@@ -20,8 +20,10 @@ const (
 
 func download(url string) (io.ReadCloser, error) {
 	reqResponse, err := http.Get(url)
-	if err != nil {
-		return nil, err
+
+	httpCode := reqResponse.StatusCode
+	if err != nil || httpCode < 200 || httpCode >= 300 {
+		return nil, fmt.Errorf("Cannot fetch page at address %s", url)
 	}
 	return reqResponse.Body, nil
 }
