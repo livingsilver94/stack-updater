@@ -9,6 +9,12 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
+const (
+	// KDEBaseURL is base URL from which it is possible
+	// to build a tarball's URL from KDE
+	KDEBaseURL = "https://download.kde.org/stable"
+)
+
 // KDEHandler returns a list of packages by parsing an HTML
 // page from the KDE project. Since KDE is split among various bundles,
 // this struct keeps only track of one of them. If you need to handle multiple
@@ -22,7 +28,7 @@ type KDEHandler struct {
 // NewKDEHandler returns a struct to handle the KDE stack, with a default
 // base URL.
 func NewKDEHandler(bundle, version string) KDEHandler {
-	return KDEHandler{Bundle: bundle, Version: version, BaseURL: "https://download.kde.org/stable"}
+	return KDEHandler{Bundle: bundle, Version: version, BaseURL: KDEBaseURL}
 }
 
 // FetchPackages returns a list of Package objects belonging to the bundle
