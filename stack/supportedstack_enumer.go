@@ -6,9 +6,11 @@ import (
 	"fmt"
 )
 
-const _SupportedStackName = "kde"
+const _SupportedStackName = "kdemate"
 
-var _SupportedStackIndex = [...]uint8{0, 3}
+var _SupportedStackIndex = [...]uint8{0, 3, 7}
+
+const _SupportedStackLowerName = "kdemate"
 
 func (i SupportedStack) String() string {
 	if i < 0 || i >= SupportedStack(len(_SupportedStackIndex)-1) {
@@ -17,14 +19,18 @@ func (i SupportedStack) String() string {
 	return _SupportedStackName[_SupportedStackIndex[i]:_SupportedStackIndex[i+1]]
 }
 
-var _SupportedStackValues = []SupportedStack{0}
+var _SupportedStackValues = []SupportedStack{0, 1}
 
 var _SupportedStackNameToValueMap = map[string]SupportedStack{
-	_SupportedStackName[0:3]: 0,
+	_SupportedStackName[0:3]:      0,
+	_SupportedStackLowerName[0:3]: 0,
+	_SupportedStackName[3:7]:      1,
+	_SupportedStackLowerName[3:7]: 1,
 }
 
 var _SupportedStackNames = []string{
 	_SupportedStackName[0:3],
+	_SupportedStackName[3:7],
 }
 
 // SupportedStackString retrieves an enum value from the enum constants string name.

@@ -14,8 +14,10 @@ type SupportedStack int
 //go:generate go run github.com/dmarkham/enumer -transform=lower -type=SupportedStack
 
 const (
-	// KDE enum
+	// KDE is a supported stack
 	KDE SupportedStack = iota
+	// MATE is a supported stack
+	MATE
 )
 
 func download(url string) (io.ReadCloser, error) {
@@ -56,6 +58,10 @@ func CreateStackHandler(stack SupportedStack, version, bundle string) Handler {
 	case KDE:
 		{
 			return NewKDEHandler(bundle, version)
+		}
+	case MATE:
+		{
+			return NewMATEHandler(version)
 		}
 	default:
 		{
