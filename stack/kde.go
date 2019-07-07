@@ -22,7 +22,7 @@ type KDEHandler struct {
 // NewKDEHandler returns a struct to handle the KDE stack, with a default
 // base URL.
 func NewKDEHandler(bundle, version string) KDEHandler {
-	return KDEHandler{Bundle: bundle, Version: version, BaseURL: "https://cdn.download.kde.org/stable"}
+	return KDEHandler{Bundle: bundle, Version: version, BaseURL: "https://download.kde.org/stable"}
 }
 
 // FetchPackages returns a list of Package objects belonging to the bundle
@@ -30,55 +30,25 @@ func NewKDEHandler(bundle, version string) KDEHandler {
 func (kde KDEHandler) FetchPackages() ([]Package, error) {
 	fileExtension := ".tar.xz"
 
-	if pageURL, pageData, err := kde.findCorrectPage(); err == nil {
-		if files, err := kde.parsePage(pageData); err == nil {
-			var packages []Package
-			for _, file := range files {
-				if strings.HasSuffix(file, fileExtension) {
-					pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
-					if pkg, err := PackageFromFilename(file, pkgURL); err == nil {
-						packages = append(packages, pkg)
-					}
-				}
-			}
-			return packages, nil
-		}
+	pageURL, pageData, err := kde.findCorrectPage()
+	if err != nil {
+		return nil, err
 	}
-	return nil, fmt.Errorf("Cannot fetch packages")
-}
+	files, err := parsePage(pageData)
+	if err != nil {
+		return nil, err
+	}
 
-func (KDEHandler) parsePage(page io.ReadCloser) ([]string, error) {
-	var pkgList []string
-	var err error
-
-	doc := html.NewTokenizer(page)
-	for tokenType := doc.Next(); tokenType != html.ErrorToken; tokenType = doc.Next() {
-		token := doc.Token()
-		if tokenType == html.StartTagToken && token.DataAtom == atom.Ul {
-			// We found the list
-			for {
-				switch doc.Next() {
-				case html.StartTagToken:
-					{
-						doc.Next()
-						doc.Next()
-						pkgList = append(pkgList, strings.TrimSpace(doc.Token().Data))
-					}
-				case html.EndTagToken:
-					{
-						if doc.Token().DataAtom == atom.Ul {
-							goto RETURN
-						}
-					}
-				}
+	var packages []Package
+	for _, file := range files {
+		if strings.HasSuffix(file, fileExtension) {
+			pkgURL := fmt.Sprintf("%s/%s", pageURL, file)
+			if pkg, err := PackageFromFilename(file, pkgURL); err == nil {
+				packages = append(packages, pkg)
 			}
 		}
 	}
-	// We couldn't find the list
-	err = fmt.Errorf("Couldn't find a list in this page")
-RETURN:
-	page.Close()
-	return pkgList, err
+	return packages, nil
 }
 
 func (kde KDEHandler) findCorrectPage() (string, io.ReadCloser, error) {
@@ -90,4 +60,49 @@ func (kde KDEHandler) findCorrectPage() (string, io.ReadCloser, error) {
 		}
 	}
 	return "", nil, fmt.Errorf("Cannot find %s, version %s", kde.Bundle, kde.Version)
+}
+
+func parsePage(page io.ReadCloser) ([]string, error) {
+	defer page.Close()
+
+	tokenizer := html.NewTokenizer(page)
+	for tokenType := tokenizer.Next(); tokenType != html.ErrorToken; tokenType = tokenizer.Next() {
+		token := tokenizer.Token()
+		if tokenType == html.StartTagToken && (token.DataAtom == atom.Ul || token.DataAtom == atom.Table) {
+			// We found the list
+			return parseList(tokenizer, token.DataAtom), nil
+		}
+	}
+	// We couldn't find the list
+	return nil, fmt.Errorf("Couldn't find a list or table in this page")
+}
+
+func parseList(tokenizer *html.Tokenizer, HTMLTag atom.Atom) []string {
+	var pkgList []string
+LOOP:
+	for {
+		switch tokenizer.Next() {
+		case html.StartTagToken:
+			{
+				listElement := tokenizer.Token()
+				if listElement.DataAtom == atom.A {
+					attribs := listElement.Attr
+					for i := range attribs {
+						if attribs[i].Key == "href" {
+							pkgList = append(pkgList, strings.TrimSpace(attribs[i].Val))
+							break
+						}
+					}
+				}
+			}
+		case html.EndTagToken:
+			{
+				t := tokenizer.Token()
+				if t.DataAtom == HTMLTag {
+					break LOOP
+				}
+			}
+		}
+	}
+	return pkgList
 }
