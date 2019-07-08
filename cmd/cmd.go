@@ -9,5 +9,5 @@ import (
 var RootCmd = &cobra.Command{
 	Use:     "stack-updater",
 	Short:   "A stack update helper for Solus",
-	Version: "1.0.0",
+	Version: "1.2.0",
 }
