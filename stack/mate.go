@@ -9,12 +9,13 @@ import (
 
 const (
 	// MATEBaseURL is base URL from which it is possible
-	// to build a tarball's URL from MATE
+	// to build a tarball's URL from MATE.
 	MATEBaseURL = "https://pub.mate-desktop.org/releases"
-	// MATEFileExtension is the default tarball extension for MATE sources
+	// MATEFileExtension is the default tarball extension for MATE sources.
 	MATEFileExtension = ".tar.xz"
 )
 
+// MATEHandler fetches packages from the MATE stack.
 type MATEHandler struct {
 	BaseURL string
 	Version string
@@ -26,6 +27,7 @@ func NewMATEHandler(version string) MATEHandler {
 	return MATEHandler{Version: version, BaseURL: MATEBaseURL}
 }
 
+// FetchPackages returns a list of Package belonging to the MATE stack.
 func (mate MATEHandler) FetchPackages() ([]Package, error) {
 	sourceURL := fmt.Sprintf("%s/%s", MATEBaseURL, mate.Version)
 	sourcePage, err := download(sourceURL)
